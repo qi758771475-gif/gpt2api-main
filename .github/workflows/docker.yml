@@ -36,5 +36,5 @@ jobs:
           context: backend
           push: true
           tags: |
-            chenqi2/gpt2api-backend:latest
-            chenqi2/gpt2api-backend:${{ steps.tag.outputs.VERSION }}
+            chenqi2/gpt2api:latest
+            chenqi2/gpt2api:${{ steps.tag.outputs.VERSION }}
