@@ -64,7 +64,7 @@ services:
     networks: [klein]
 
   api:
-    image: kleinai/backend:latest
+    image: chenqi2/gpt2api-backend:latest
     build:
       context: ../backend
       dockerfile: Dockerfile
@@ -90,7 +90,7 @@ services:
     networks: [klein]
 
   admin:
-    image: kleinai/backend:latest
+    image: chenqi2/gpt2api-backend:latest
     container_name: klein-admin
     restart: always
     command: ["/app/admin"]
@@ -109,7 +109,7 @@ services:
     networks: [klein]
 
   openai:
-    image: kleinai/backend:latest
+    image: chenqi2/gpt2api-backend:latest
     container_name: klein-openai
     restart: always
     command: ["/app/openai"]
@@ -130,7 +130,7 @@ services:
     networks: [klein]
 
   worker:
-    image: kleinai/backend:latest
+    image: chenqi2/gpt2api-backend:latest
     container_name: klein-worker
     restart: always
     command: ["/app/worker"]
@@ -148,7 +148,7 @@ services:
     networks: [klein]
 
   user-web:
-    image: kleinai/user-web:latest
+    image: chenqi2/gpt2api-user-web:latest
     build:
       context: ../frontend
       dockerfile: apps/user/Dockerfile
@@ -158,7 +158,7 @@ services:
     networks: [klein]
 
   admin-web:
-    image: kleinai/admin-web:latest
+    image: chenqi2/gpt2api-admin-web:latest
     build:
       context: ../frontend
       dockerfile: apps/admin/Dockerfile
