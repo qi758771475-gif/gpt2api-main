@@ -25,13 +25,14 @@ import (
 
 // BillingService 计费引擎。
 type BillingService struct {
-	db     *gorm.DB
-	wallet *repo.WalletRepo
+	db        *gorm.DB
+	wallet    *repo.WalletRepo
+	sub2api   *Sub2APIClient
 }
 
 // NewBillingService 构造。
-func NewBillingService(db *gorm.DB, w *repo.WalletRepo) *BillingService {
-	return &BillingService{db: db, wallet: w}
+func NewBillingService(db *gorm.DB, w *repo.WalletRepo, sub2api *Sub2APIClient) *BillingService {
+	return &BillingService{db: db, wallet: w, sub2api: sub2api}
 }
 
 // PreDeductReq 预扣点请求。
@@ -44,18 +45,18 @@ type PreDeductReq struct {
 	UnitPoints int64
 }
 
-// PreDeduct 预扣点 + 写 consume_record(status=frozen)。
+// PreDeduct calls sub2api to freeze USD, then writes consume_record locally for tracking.
 func (s *BillingService) PreDeduct(ctx context.Context, req PreDeductReq) error {
 	total := req.UnitPoints * int64(req.Count)
 	if total <= 0 {
 		return errcode.InvalidParam.WithMsg("invalid cost")
 	}
 
-	if _, err := s.wallet.Freeze(ctx, req.UserID, model.BizConsume, req.TaskID, total, req.ModelCode); err != nil {
-		if errors.Is(err, repo.ErrInsufficient) {
-			return errcode.InsufficientPoints
-		}
-		return errcode.DBError.Wrap(err)
+	// Call sub2api to pre-deduct USD (amount in cents, convert to dollars)
+	amountUSD := float64(total) / 100.0
+	frozenID, err := s.sub2api.PreDeduct(ctx, req.UserID, amountUSD, req.ModelCode, req.TaskID)
+	if err != nil {
+		return errcode.InsufficientPoints
 	}
 
 	rec := &model.ConsumeRecord{
@@ -69,24 +70,23 @@ func (s *BillingService) PreDeduct(ctx context.Context, req PreDeductReq) error 
 		Status:      model.ConsumeStatusFrozen,
 	}
 	if err := s.db.WithContext(ctx).Create(rec).Error; err != nil {
-		// 写 consume_record 失败需要回滚已 freeze 的点
-		_ = s.wallet.Refund(ctx, req.UserID, req.TaskID, "rollback consume_record failed", total)
+		_ = s.sub2api.Refund(ctx, frozenID)
 		return errcode.DBError.Wrap(err)
 	}
 	return nil
 }
 
-// Settle 结算消费：将 frozen → 落地。account_id 可写入实际消耗的池中账号。
+// Settle 结算消费：调用 sub2api 确认扣费 + 更新本地记录。
 func (s *BillingService) Settle(ctx context.Context, taskID string, accountID *uint64) error {
 	var rec model.ConsumeRecord
 	if err := s.db.WithContext(ctx).Where("task_id = ?", taskID).First(&rec).Error; err != nil {
 		return errcode.ResourceMissing
 	}
 	if rec.Status != model.ConsumeStatusFrozen {
-		// 已结算或退款，幂等返回
 		return nil
 	}
-	if err := s.wallet.Settle(ctx, rec.UserID, rec.TotalPoints); err != nil {
+	if err := s.sub2api.Settle(ctx, taskID); err != nil {
+		logger.FromCtx(ctx).Error("sub2api.settle", zap.Error(err))
 		return errcode.DBError.Wrap(err)
 	}
 	updates := map[string]any{"status": model.ConsumeStatusSettled}
@@ -159,7 +159,7 @@ func (s *BillingService) FinalizeUsage(ctx context.Context, taskID string, actua
 	return nil
 }
 
-// FailRefund 失败退款：解冻 + 退还 + 标记 status=refunded。
+// FailRefund 失败退款：调用 sub2api 退回 + 标记本地 status=refunded。
 func (s *BillingService) FailRefund(ctx context.Context, taskID, reason string) error {
 	var rec model.ConsumeRecord
 	if err := s.db.WithContext(ctx).Where("task_id = ?", taskID).First(&rec).Error; err != nil {
@@ -168,8 +168,8 @@ func (s *BillingService) FailRefund(ctx context.Context, taskID, reason string) 
 	if rec.Status != model.ConsumeStatusFrozen {
 		return nil
 	}
-	if err := s.wallet.Refund(ctx, rec.UserID, taskID, reason, rec.TotalPoints); err != nil {
-		return errcode.DBError.Wrap(err)
+	if err := s.sub2api.Refund(ctx, taskID); err != nil {
+		logger.FromCtx(ctx).Error("sub2api.refund", zap.Error(err))
 	}
 	if err := s.db.WithContext(ctx).Model(&model.ConsumeRecord{}).
 		Where("task_id = ?", taskID).

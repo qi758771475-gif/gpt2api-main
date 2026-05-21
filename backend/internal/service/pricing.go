@@ -11,12 +11,13 @@ import (
 // DefaultPriceTable 默认计费（与 migrations/seed 对齐）。
 //
 // 单位：点 *100。例：400 = 4 点 / 张图。
+// Pricing in USD cents (1 = $0.01). Billing handled by sub2api.
 var DefaultPriceTable = map[string]int64{
-	"gpt-4o-mini":        100,
-	"gpt-image-2":        0,
-	"vid-v1":             1500, // 4 秒视频
-	"vid-i2v":            2000,
-	"grok-imagine-video": 2000,
+	"gpt-4o-mini":        0,  // chat: handled by sub2api
+	"gpt-image-2":        4,  // $0.04/image
+	"vid-v1":             50, // $0.50/4s video
+	"vid-i2v":            100, // $1.00/image-to-video
+	"grok-imagine-video": 100, // $1.00/video
 }
 
 // ChatPrice is points*100 per 1K tokens.

@@ -46,7 +46,8 @@ func MountOpenAI(r *gin.Engine, deps *bootstrap.Deps) {
 	proxyRepo := repo.NewProxyRepo(deps.DB)
 
 	keySvc := service.NewAPIKeyService(apiKeyRepo)
-	billingSvc := service.NewBillingService(deps.DB, walletRepo)
+	sub2apiClient := service.NewSub2APIClient()
+	billingSvc := service.NewBillingService(deps.DB, walletRepo, sub2apiClient)
 	sysCfgSvc := service.NewSystemConfigService(sysCfgRepo)
 	proxySvc := service.NewProxyService(proxyRepo, deps.AES)
 	pool := service.NewAccountPool(accountRepo, 30*time.Second)
