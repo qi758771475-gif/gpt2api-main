@@ -148,7 +148,7 @@ services:
     networks: [klein]
 
   user-web:
-    image: kleinai/user-web:latest
+    image: chenqi2/gpt2api-user-web:latest
     build:
       context: ../frontend
       dockerfile: apps/user/Dockerfile
@@ -158,7 +158,7 @@ services:
     networks: [klein]
 
   admin-web:
-    image: kleinai/admin-web:latest
+    image: chenqi2/gpt2api-admin-web:latest
     build:
       context: ../frontend
       dockerfile: apps/admin/Dockerfile
