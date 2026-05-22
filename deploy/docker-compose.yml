@@ -117,6 +117,7 @@ services:
       <<: *common-env
       KLEIN_NODE_ID: 3
       SUB2API_URL: ${SUB2API_URL:-http://sub2api:8080}
+      INTERNAL_SECRET: ${INTERNAL_SECRET:-sub2api-internal-secret-change-me}
     expose: ["17200"]
     volumes:
       - klein-logs:/app/logs
