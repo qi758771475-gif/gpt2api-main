@@ -54,7 +54,7 @@ func (s *BillingService) PreDeduct(ctx context.Context, req PreDeductReq) error 
 
 	// Call sub2api to pre-deduct USD (amount in cents, convert to dollars)
 	amountUSD := float64(total) / 100.0
-	frozenID, err := s.sub2api.PreDeduct(ctx, req.UserID, amountUSD, req.ModelCode, req.TaskID)
+	frozenID, err := s.sub2api.PreDeduct(ctx, amountUSD, req.ModelCode, req.TaskID)
 	if err != nil {
 		return errcode.InsufficientPoints
 	}
