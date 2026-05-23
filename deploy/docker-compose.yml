@@ -176,10 +176,6 @@ services:
     container_name: klein-nginx
     restart: always
     depends_on: [api, admin, openai, user-web, admin-web]
-    ports:
-      - "${KLEIN_USER_WEB_PORT:-17080}:17080"
-      - "${KLEIN_ADMIN_WEB_PORT:-17088}:17088"
-      - "${KLEIN_OPENAI_PORT:-17200}:17200"
     volumes:
       - ./nginx:/etc/nginx/conf.d:ro
       - ./certs:/etc/nginx/certs:ro
