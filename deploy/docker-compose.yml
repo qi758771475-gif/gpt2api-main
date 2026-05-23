@@ -153,6 +153,8 @@ services:
       context: ../frontend
       dockerfile: apps/user/Dockerfile
     container_name: klein-user-web
+    ports:
+      - "127.0.0.1:17080:80"
     restart: always
     expose: ["80"]
     networks: [klein, sub2api-deploy_sub2api-network]
@@ -163,6 +165,8 @@ services:
       context: ../frontend
       dockerfile: apps/admin/Dockerfile
     container_name: klein-admin-web
+    ports:
+      - "127.0.0.1:17088:80"
     restart: always
     expose: ["80"]
     networks: [klein, sub2api-deploy_sub2api-network]
