@@ -39,7 +39,7 @@ services:
       - "127.0.0.1:${KLEIN_MYSQL_PORT:-13306}:3306"
     volumes:
       - klein-mysql-data:/var/lib/mysql
-      # 首次初始化时执行 goose Up 段，避免 mysql 直接执行 Down 把表删空
+      - ./mysql-init/init-all.sql:/docker-entrypoint-initdb.d/init-all.sql:ro
       - ./mysql-init/01-run-migrations.sh:/docker-entrypoint-initdb.d/01-run-migrations.sh:ro
       - ../backend/migrations:/migrations:ro
     healthcheck:
