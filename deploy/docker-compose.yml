@@ -40,7 +40,6 @@ services:
     volumes:
       - klein-mysql-data:/var/lib/mysql
       - ./mysql-init/init-all.sql:/docker-entrypoint-initdb.d/init-all.sql:ro
-      - ./mysql-init/01-run-migrations.sh:/docker-entrypoint-initdb.d/01-run-migrations.sh:ro
       - ../backend/migrations:/migrations:ro
     healthcheck:
       test: ["CMD", "mysqladmin", "ping", "-h", "127.0.0.1", "-uroot", "-p$$MYSQL_ROOT_PASSWORD"]
