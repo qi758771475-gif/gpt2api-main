@@ -65,9 +65,6 @@ services:
 
   api:
     image: chenqi2/gpt2api:latest
-    build:
-      context: ../backend
-      dockerfile: Dockerfile
     container_name: klein-api
     restart: always
     command: ["/app/api"]
@@ -94,6 +91,8 @@ services:
     container_name: klein-admin
     restart: always
     command: ["/app/admin"]
+    ports:
+      - "127.0.0.1:17188:17188"
     environment:
       <<: *common-env
       KLEIN_NODE_ID: 2
@@ -149,9 +148,6 @@ services:
 
   user-web:
     image: chenqi2/gpt2api-user-web:latest
-    build:
-      context: ../frontend
-      dockerfile: apps/user/Dockerfile
     container_name: klein-user-web
     ports:
       - "127.0.0.1:17080:80"
@@ -161,9 +157,6 @@ services:
 
   admin-web:
     image: chenqi2/gpt2api-admin-web:latest
-    build:
-      context: ../frontend
-      dockerfile: apps/admin/Dockerfile
     container_name: klein-admin-web
     ports:
       - "127.0.0.1:17088:80"
