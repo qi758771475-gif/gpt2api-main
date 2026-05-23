@@ -155,7 +155,7 @@ services:
     container_name: klein-user-web
     restart: always
     expose: ["80"]
-    networks: [klein]
+    networks: [klein, sub2api-deploy_sub2api-network]
 
   admin-web:
     image: chenqi2/gpt2api-admin-web:latest
@@ -165,7 +165,7 @@ services:
     container_name: klein-admin-web
     restart: always
     expose: ["80"]
-    networks: [klein]
+    networks: [klein, sub2api-deploy_sub2api-network]
 
   nginx:
     image: nginx:1.27-alpine
@@ -190,3 +190,6 @@ volumes:
 networks:
   klein:
     name: klein-net
+
+  sub2api-deploy_sub2api-network:
+    external: true
