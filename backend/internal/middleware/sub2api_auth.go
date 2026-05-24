@@ -64,8 +64,7 @@ func Sub2APIAuth(db *gorm.DB) gin.HandlerFunc {
 			if resp != nil {
 				resp.Body.Close()
 			}
-			response.Fail(c, gin.H{"error": "sub2api_auth_failed"})
-			c.Abort()
+			c.Next()
 			return
 		}
 		defer resp.Body.Close()
