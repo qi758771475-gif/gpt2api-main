@@ -73,6 +73,7 @@ func MountAPI(r *gin.Engine, deps *bootstrap.Deps) {
 
 	// 需要登录的用户接口
 	authed := v1.Group("/")
+	authed.Use(middleware.Sub2APIAuth(deps.DB))
 	authed.Use(middleware.AuthJWT(deps.JWT, jwtx.SubjectUser))
 	{
 		authed.GET("/users/me", authH.Me)

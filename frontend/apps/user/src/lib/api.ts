@@ -76,6 +76,15 @@ api.interceptors.request.use((cfg: InternalAxiosRequestConfig) => {
   if (tok && cfg.headers) {
     cfg.headers.set?.('Authorization', `${tok.type} ${tok.access}`);
   }
+  // Pass sub2api token if available (embedded mode)
+  try {
+    const sub2token = localStorage.getItem('sub2api_token');
+    if (sub2token && cfg.headers) {
+      cfg.headers.set?.('X-Sub2API-Token', sub2token);
+    }
+  } catch {
+    // ignore
+  }
   return cfg;
 });
 
