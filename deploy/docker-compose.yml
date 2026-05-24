@@ -45,7 +45,7 @@ services:
       test: ["CMD", "mysqladmin", "ping", "-h", "127.0.0.1", "-uroot", "-p$$MYSQL_ROOT_PASSWORD"]
       interval: 10s
       retries: 6
-    networks: [klein]
+    networks: [klein, sub2api-deploy_sub2api-network]
 
   redis:
     image: redis:7-alpine
@@ -60,7 +60,7 @@ services:
       test: ["CMD", "redis-cli", "ping"]
       interval: 10s
       retries: 6
-    networks: [klein]
+    networks: [klein, sub2api-deploy_sub2api-network]
 
   api:
     image: chenqi2/gpt2api:latest
@@ -76,6 +76,9 @@ services:
     depends_on:
       mysql:  { condition: service_healthy }
       redis:  { condition: service_healthy }
+    environment:
+      SUB2API_URL: ${SUB2API_URL:-http://sub2api:8080}
+      INTERNAL_SECRET: ${INTERNAL_SECRET:-sub2api-internal-secret-change-me}
     healthcheck:
       test: ["CMD-SHELL", "wget -qO- http://127.0.0.1:17180/healthz | grep -q ok || exit 1"]
       interval: 15s
@@ -83,7 +86,7 @@ services:
     deploy:
       resources:
         limits: { cpus: '2', memory: 1G }
-    networks: [klein]
+    networks: [klein, sub2api-deploy_sub2api-network]
 
   admin:
     image: chenqi2/gpt2api:latest
@@ -104,7 +107,7 @@ services:
     deploy:
       resources:
         limits: { cpus: '1', memory: 512M }
-    networks: [klein]
+    networks: [klein, sub2api-deploy_sub2api-network]
 
   openai:
     image: chenqi2/gpt2api:latest
@@ -125,7 +128,7 @@ services:
     deploy:
       resources:
         limits: { cpus: '2', memory: 1G }
-    networks: [klein]
+    networks: [klein, sub2api-deploy_sub2api-network]
 
   worker:
     image: chenqi2/gpt2api:latest
@@ -143,7 +146,7 @@ services:
     deploy:
       resources:
         limits: { cpus: '2', memory: 1G }
-    networks: [klein]
+    networks: [klein, sub2api-deploy_sub2api-network]
 
   user-web:
     image: chenqi2/gpt2api-user-web:latest
@@ -172,7 +175,7 @@ services:
       - ./nginx:/etc/nginx/conf.d:ro
       - ./certs:/etc/nginx/certs:ro
       - klein-logs:/var/log/nginx
-    networks: [klein]
+    networks: [klein, sub2api-deploy_sub2api-network]
 
 volumes:
   klein-mysql-data:
