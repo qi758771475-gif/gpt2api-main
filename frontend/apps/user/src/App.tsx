@@ -1,4 +1,4 @@
-import { Suspense, lazy, useEffect } from 'react';
+import { Suspense, lazy } from 'react';
 import { Navigate, Route, Routes, useSearchParams } from 'react-router-dom';
 
 import { AppLayout } from './layouts/AppLayout';
