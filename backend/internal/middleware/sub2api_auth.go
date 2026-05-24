@@ -109,7 +109,7 @@ func Sub2APIAuth(db *gorm.DB) gin.HandlerFunc {
 		}
 
 		// Store in context
-		c.Set("uid", user.ID)
+		c.Set(string(CtxUID), user.ID)
 		c.Set("sub2api_id", me.ID)
 		c.Set("sub2api_email", me.Email)
 		ctx := context.WithValue(c.Request.Context(), CtxUID, user.ID)
