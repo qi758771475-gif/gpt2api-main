@@ -14,7 +14,6 @@ import (
 	"gorm.io/gorm"
 
 	"github.com/kleinai/backend/internal/model"
-	"github.com/kleinai/backend/pkg/response"
 )
 
 type ctxKeySub2API struct{}
