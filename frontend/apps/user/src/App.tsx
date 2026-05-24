@@ -1,5 +1,5 @@
 import { Suspense, lazy } from 'react';
-import { Navigate, Route, Routes, useSearchParams } from 'react-router-dom';
+import { Navigate, Route, Routes } from 'react-router-dom';
 
 import { AppLayout } from './layouts/AppLayout';
 import { AuthLayout } from './layouts/AuthLayout';
@@ -18,13 +18,11 @@ const DocsPage = lazy(() => import('./pages/keys/DocsPage'));
 const InvitePage = lazy(() => import('./pages/invite/InvitePage'));
 const SettingsPage = lazy(() => import('./pages/settings/SettingsPage'));
 
-function useIsEmbedded() {
-  const [params] = useSearchParams();
-  return params.get('mode') === 'embedded';
-}
+const urlParams = new URLSearchParams(window.location.search);
+const isEmbedded = urlParams.get('mode') === 'embedded';
 
 export default function App() {
-  const embedded = useIsEmbedded();
+  const embedded = isEmbedded;
 
   return (
     <>
