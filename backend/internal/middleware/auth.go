@@ -20,8 +20,13 @@ const (
 )
 
 // AuthJWT 校验 Bearer token。expectSub 用于区分用户端 / 管理后台。
+// 如果 Sub2APIAuth 中间件已将用户注入上下文，则直接放行。
 func AuthJWT(mgr *jwtx.Manager, expectSub jwtx.Subject) gin.HandlerFunc {
 	return func(c *gin.Context) {
+		if _, ok := c.Get(string(CtxUID)); ok {
+			c.Next()
+			return
+		}
 		auth := c.GetHeader("Authorization")
 		if !strings.HasPrefix(auth, "Bearer ") {
 			response.Fail(c, errcode.Unauthorized)
