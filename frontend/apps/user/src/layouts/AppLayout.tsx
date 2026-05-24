@@ -59,7 +59,7 @@ export function AppLayout({ embedded }: { embedded?: boolean }) {
   };
 
   const handleNav = (item: NavItem, e: MouseEvent) => {
-    if (item.authed && !isAuthed) {
+    if (!embedded && item.authed && !isAuthed) {
       e.preventDefault();
       openGate({ hint: `登录后即可使用“${item.label}”`, onLoggedIn: () => navigate(item.to) });
     }

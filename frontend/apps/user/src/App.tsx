@@ -19,7 +19,7 @@ const InvitePage = lazy(() => import('./pages/invite/InvitePage'));
 const SettingsPage = lazy(() => import('./pages/settings/SettingsPage'));
 
 const urlParams = new URLSearchParams(window.location.search);
-const isEmbedded = urlParams.get('mode') === 'embedded';
+const isEmbedded = urlParams.get('mode') === 'embedded' || !!urlParams.get('token');
 
 export default function App() {
   const embedded = isEmbedded;
