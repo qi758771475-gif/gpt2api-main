@@ -43,8 +43,9 @@ const NAV_ITEMS: NavItem[] = [
   { to: '/settings', label: '设置', icon: Settings, authed: true },
 ];
 
-export function AppLayout() {
+export function AppLayout({ embedded }: { embedded?: boolean }) {
   const token = useAuthStore((s) => s.token);
+  const visibleItems = embedded ? NAV_ITEMS.filter((item) => !["/billing", "/keys", "/invite"].includes(item.to)) : NAV_ITEMS;
   const me = useAuthStore((s) => s.me);
   const logout = useAuthStore((s) => s.logout);
   const openGate = useLoginGateStore((s) => s.openGate);
@@ -77,14 +78,14 @@ export function AppLayout() {
         </button>
 
         <nav className="mt-6 flex flex-1 flex-col items-center gap-2">
-          {NAV_ITEMS.slice(0, 4).map((item) => <RailLink key={item.to} item={item} onClick={handleNav} />)}
+          {visibleItems.slice(0, 4).map((item) => <RailLink key={item.to} item={item} onClick={handleNav} />)}
           <div className="my-2 h-px w-6 bg-neutral-200" />
-          {NAV_ITEMS.slice(4, 7).map((item) => <RailLink key={item.to} item={item} onClick={handleNav} />)}
+          {visibleItems.slice(4, 7).map((item) => <RailLink key={item.to} item={item} onClick={handleNav} />)}
         </nav>
 
         <div className="mb-3 flex flex-col items-center gap-2">
-          {NAV_ITEMS.slice(7).map((item) => <RailLink key={item.to} item={item} onClick={handleNav} />)}
-          {isAuthed ? (
+          {visibleItems.slice(7).map((item) => <RailLink key={item.to} item={item} onClick={handleNav} />)}
+          {!embedded && isAuthed ? (
             <>
               <button
                 type="button"
@@ -124,7 +125,7 @@ export function AppLayout() {
           <PanelLeft size={18} />
         </button>
         <div className="flex items-center gap-1">
-          {NAV_ITEMS.slice(0, 3).map((item) => <MobileMode key={item.to} item={item} onClick={handleNav} />)}
+          {visibleItems.slice(0, 3).map((item) => <MobileMode key={item.to} item={item} onClick={handleNav} />)}
         </div>
         <button className="grid h-9 w-9 place-items-center rounded-full hover:bg-neutral-100" onClick={() => navigate('/history')}>
           <Search size={18} />

@@ -1,5 +1,5 @@
-import { Suspense, lazy } from 'react';
-import { Navigate, Route, Routes } from 'react-router-dom';
+import { Suspense, lazy, useEffect } from 'react';
+import { Navigate, Route, Routes, useSearchParams } from 'react-router-dom';
 
 import { AppLayout } from './layouts/AppLayout';
 import { AuthLayout } from './layouts/AuthLayout';
@@ -18,35 +18,48 @@ const DocsPage = lazy(() => import('./pages/keys/DocsPage'));
 const InvitePage = lazy(() => import('./pages/invite/InvitePage'));
 const SettingsPage = lazy(() => import('./pages/settings/SettingsPage'));
 
+function useIsEmbedded() {
+  const [params] = useSearchParams();
+  return params.get('mode') === 'embedded';
+}
+
 export default function App() {
+  const embedded = useIsEmbedded();
+
   return (
     <>
       <Toaster />
-      <LoginGate />
+      {!embedded && <LoginGate />}
       <Suspense fallback={<LoadingScreen />}>
         <Routes>
-          {/* 独立的全屏品牌登录/注册页（保留兜底入口） */}
-          <Route element={<AuthLayout />}>
-            <Route path="/login" element={<LoginPage />} />
-            <Route path="/register" element={<RegisterPage />} />
-          </Route>
+          {!embedded && (
+            <Route element={<AuthLayout />}>
+              <Route path="/login" element={<LoginPage />} />
+              <Route path="/register" element={<RegisterPage />} />
+            </Route>
+          )}
 
-          {/* 主应用：未登录也可浏览创作页 / 调用说明 */}
-          <Route element={<AppLayout />}>
+          <Route element={<AppLayout embedded={embedded} />}>
             <Route path="/" element={<Navigate to="/create/image" replace />} />
             <Route path="/create/image" element={<CreateStudioPage />} />
             <Route path="/create/text" element={<CreateStudioPage />} />
             <Route path="/create/video" element={<CreateStudioPage />} />
             <Route path="/docs" element={<DocsPage />} />
 
-            {/* 受保护：未登录将弹浮层并退回首页 */}
-            <Route element={<RequireAuth />}>
-              <Route path="/history" element={<HistoryPage />} />
-              <Route path="/billing" element={<BillingPage />} />
-              <Route path="/keys" element={<KeysPage />} />
-              <Route path="/invite" element={<InvitePage />} />
-              <Route path="/settings" element={<SettingsPage />} />
-            </Route>
+            {embedded ? (
+              <>
+                <Route path="/history" element={<HistoryPage />} />
+                <Route path="/settings" element={<SettingsPage />} />
+              </>
+            ) : (
+              <Route element={<RequireAuth />}>
+                <Route path="/history" element={<HistoryPage />} />
+                <Route path="/billing" element={<BillingPage />} />
+                <Route path="/keys" element={<KeysPage />} />
+                <Route path="/invite" element={<InvitePage />} />
+                <Route path="/settings" element={<SettingsPage />} />
+              </Route>
+            )}
           </Route>
 
           <Route path="*" element={<Navigate to="/" replace />} />
