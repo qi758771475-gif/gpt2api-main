@@ -57,7 +57,7 @@ func Sub2APIAuth(db *gorm.DB) gin.HandlerFunc {
 
 		// Validate token by calling sub2api
 		req, _ := http.NewRequestWithContext(c.Request.Context(), "GET",
-			sub2apiURL+"/api/v1/user/me", nil)
+			sub2apiURL+"/api/v1/auth/me", nil)
 		req.Header.Set("Authorization", "Bearer "+tok)
 
 		resp, err := client.Do(req)
