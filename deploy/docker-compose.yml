@@ -70,15 +70,14 @@ services:
     environment:
       <<: *common-env
       KLEIN_NODE_ID: 1
+      SUB2API_URL: ${SUB2API_URL:-http://sub2api:8080}
+      INTERNAL_SECRET: ${INTERNAL_SECRET:-sub2api-internal-secret-change-me}
     expose: ["17180"]
     volumes:
       - klein-logs:/app/logs
     depends_on:
       mysql:  { condition: service_healthy }
       redis:  { condition: service_healthy }
-    environment:
-      SUB2API_URL: ${SUB2API_URL:-http://sub2api:8080}
-      INTERNAL_SECRET: ${INTERNAL_SECRET:-sub2api-internal-secret-change-me}
     healthcheck:
       test: ["CMD-SHELL", "wget -qO- http://127.0.0.1:17180/healthz | grep -q ok || exit 1"]
       interval: 15s
