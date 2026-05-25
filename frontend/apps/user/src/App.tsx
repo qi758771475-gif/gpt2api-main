@@ -22,11 +22,14 @@ const urlParams = new URLSearchParams(window.location.search);
 const isEmbedded = urlParams.get('mode') === 'embedded' || !!urlParams.get('token');
 
 // In embedded mode, store sub2api token for API authentication
+// and clear any stale gpt2api JWT to prevent AuthJWT from
+// trying to validate an expired token instead of using Sub2APIAuth.
 if (isEmbedded) {
   const tok = urlParams.get('token');
   if (tok) {
     try { localStorage.setItem('sub2api_token', tok); } catch {}
   }
+  try { localStorage.removeItem('klein:token'); } catch {}
 }
 
 export default function App() {

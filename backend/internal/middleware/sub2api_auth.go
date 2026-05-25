@@ -11,9 +11,11 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
+	"go.uber.org/zap"
 	"gorm.io/gorm"
 
 	"github.com/kleinai/backend/internal/model"
+	"github.com/kleinai/backend/pkg/logger"
 )
 
 type ctxKeySub2API struct{}
@@ -63,6 +65,10 @@ func Sub2APIAuth(db *gorm.DB) gin.HandlerFunc {
 			if resp != nil {
 				resp.Body.Close()
 			}
+			logger.FromCtx(c.Request.Context()).Warn("sub2api_auth: validate failed",
+				zap.Error(err),
+				zap.Int("status", func() int { if resp != nil { return resp.StatusCode }; return 0 }()),
+			)
 			c.Next()
 			return
 		}
@@ -73,10 +79,18 @@ func Sub2APIAuth(db *gorm.DB) gin.HandlerFunc {
 			Data Sub2APIMeResp `json:"data"`
 		}
 		if err := json.Unmarshal(body, &apiResp); err != nil || apiResp.Data.ID == 0 {
+			logger.FromCtx(c.Request.Context()).Warn("sub2api_auth: unmarshal failed or id==0",
+				zap.Error(err),
+				zap.ByteString("body", body),
+			)
 			c.Next()
 			return
 		}
 		me := apiResp.Data
+		logger.FromCtx(c.Request.Context()).Info("sub2api_auth: user authenticated",
+			zap.Int64("sub2api_id", me.ID),
+			zap.String("email", me.Email),
+		)
 
 		// Find or create gpt2api user
 		var user model.User
