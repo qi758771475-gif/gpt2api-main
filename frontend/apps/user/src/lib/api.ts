@@ -106,7 +106,7 @@ api.interceptors.response.use(
     const body = err.response?.data;
     const msg = body?.msg ?? friendlyHttpError(status, err.message);
     const code = body?.code ?? status ?? -1;
-    if (status === 401) {
+    if (status === 401 && (code === 401101 || code === 401102 || code === 401103)) {
       clearToken();
       unauthorizedHandler?.();
     }

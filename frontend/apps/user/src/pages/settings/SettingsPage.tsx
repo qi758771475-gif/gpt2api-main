@@ -32,6 +32,8 @@ type PwdForm = z.infer<typeof pwdSchema>;
 
 export default function SettingsPage() {
   const me = useAuthStore((s) => s.me);
+  const embeddedParams = new URLSearchParams(window.location.search);
+  const embedded = embeddedParams.get('mode') === 'embedded' || !!embeddedParams.get('token');
   const [mode, setLocalMode] = useState<ThemeMode>(
     (localStorage.getItem('klein:theme') as ThemeMode | null) ?? 'light',
   );
@@ -112,7 +114,7 @@ export default function SettingsPage() {
         </div>
       </section>
 
-      <section className="card card-section">
+      {!embedded && <section className="card card-section">
         <h3 className="section-title mb-4">修改密码</h3>
         <form
           className="grid sm:grid-cols-2 gap-3"
@@ -157,7 +159,7 @@ export default function SettingsPage() {
             </button>
           </div>
         </form>
-      </section>
+      </section>}
     </div>
   );
 }
