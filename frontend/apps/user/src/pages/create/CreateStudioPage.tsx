@@ -27,7 +27,7 @@ import { ApiError } from '../../lib/api';
 import { fmtRelative } from '../../lib/format';
 import { genApi } from '../../lib/services';
 import type { GenerationTask, PublicModel } from '../../lib/types';
-import { useAuthStore } from '../../stores/auth';
+import { isAuthed, useAuthStore } from '../../stores/auth';
 import { toast } from '../../stores/toast';
 
 type StudioMode = 'image' | 'text' | 'video';
@@ -179,6 +179,7 @@ export default function CreateStudioPage() {
   const ensureLoggedIn = useEnsureLoggedIn();
   const refreshMe = useAuthStore((s) => s.refreshMe);
   const token = useAuthStore((s) => s.token);
+  const authed = !!token || isAuthed();
 
   const modelCatalog = useQuery({
     queryKey: ['gen.models'],
@@ -235,7 +236,7 @@ export default function CreateStudioPage() {
 
   const history = useQuery({
     queryKey: ['gen.history', 'studio', token, historyPageSize],
-    enabled: !!token,
+    enabled: authed,
     queryFn: () => genApi.history({ kind: 'media', page: 1, page_size: historyPageSize }),
   });
 
@@ -508,7 +509,7 @@ export default function CreateStudioPage() {
               options={HISTORY_PAGE_SIZES.map((n) => ({ value: String(n), label: `${n}个` }))}
             />
             <HistoryActionMenu
-              disabled={!token || deleteHistory.isPending}
+              disabled={!authed || deleteHistory.isPending}
               onDeleteBefore3Days={() => {
                 if (window.confirm('确定删除3天前的作品记录吗？')) {
                   deleteHistory.mutate('before_3d');

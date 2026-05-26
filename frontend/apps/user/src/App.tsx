@@ -1,4 +1,4 @@
-import { Suspense, lazy } from 'react';
+import { Suspense, lazy, useEffect } from 'react';
 import { Navigate, Route, Routes } from 'react-router-dom';
 
 import { AppLayout } from './layouts/AppLayout';
@@ -7,6 +7,7 @@ import { LoadingScreen } from './components/LoadingScreen';
 import { LoginGate } from './components/LoginGate';
 import { Toaster } from './components/Toaster';
 import { RequireAuth } from './routes/RequireAuth';
+import { useAuthStore } from './stores/auth';
 
 const LoginPage = lazy(() => import('./pages/auth/LoginPage'));
 const RegisterPage = lazy(() => import('./pages/auth/RegisterPage'));
@@ -34,6 +35,14 @@ if (isEmbedded) {
 
 export default function App() {
   const embedded = isEmbedded;
+  const me = useAuthStore((s) => s.me);
+  const refreshMe = useAuthStore((s) => s.refreshMe);
+
+  useEffect(() => {
+    if (embedded && !me) {
+      void refreshMe();
+    }
+  }, [embedded, me, refreshMe]);
 
   return (
     <>

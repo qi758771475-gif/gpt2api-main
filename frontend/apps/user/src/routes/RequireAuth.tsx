@@ -2,7 +2,7 @@ import { useEffect } from 'react';
 import { Navigate, Outlet, useLocation } from 'react-router-dom';
 
 import { LoadingScreen } from '../components/LoadingScreen';
-import { useAuthStore } from '../stores/auth';
+import { isAuthed, useAuthStore } from '../stores/auth';
 import { useLoginGateStore } from '../stores/loginGate';
 
 /**
@@ -18,20 +18,21 @@ export function RequireAuth() {
   const refreshMe = useAuthStore((s) => s.refreshMe);
   const openGate = useLoginGateStore((s) => s.openGate);
   const loc = useLocation();
+  const authed = !!token || isAuthed();
 
   useEffect(() => {
-    if (token && !me) {
+    if (authed && !me) {
       void refreshMe();
     }
-  }, [token, me, refreshMe]);
+  }, [authed, me, refreshMe]);
 
   useEffect(() => {
-    if (!token) {
+    if (!authed) {
       openGate({ hint: '该页面需要登录后访问' });
     }
-  }, [token, openGate]);
+  }, [authed, openGate]);
 
-  if (!token) {
+  if (!authed) {
     return <Navigate to="/" replace state={{ from: loc.pathname + loc.search }} />;
   }
   if (!me && loading) {

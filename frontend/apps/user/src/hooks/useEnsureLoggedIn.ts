@@ -1,6 +1,6 @@
 import { useCallback } from 'react';
 
-import { useAuthStore } from '../stores/auth';
+import { isAuthed, useAuthStore } from '../stores/auth';
 import { useLoginGateStore } from '../stores/loginGate';
 
 /**
@@ -15,7 +15,7 @@ export function useEnsureLoggedIn() {
 
   return useCallback(
     (action: () => void, hint?: string): boolean => {
-      if (tokenSel) {
+      if (tokenSel || isAuthed()) {
         action();
         return true;
       }

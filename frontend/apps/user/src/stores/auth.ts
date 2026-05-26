@@ -5,6 +5,16 @@ import { clearToken, loadToken, saveToken, type StoredToken } from '../lib/api';
 import { authApi } from '../lib/services';
 import type { MeResp, TokenPair } from '../lib/types';
 
+const SUB2API_TOKEN_KEY = 'sub2api_token';
+
+function hasEmbeddedToken() {
+  try {
+    return !!localStorage.getItem(SUB2API_TOKEN_KEY);
+  } catch {
+    return false;
+  }
+}
+
 interface AuthState {
   token: StoredToken | null;
   me: MeResp | null;
@@ -32,7 +42,7 @@ export const useAuthStore = create<AuthState>((set, get) => ({
   setMe: (m) => set({ me: m }),
 
   refreshMe: async () => {
-    if (!get().token) return null;
+    if (!get().token && !hasEmbeddedToken()) return null;
     set({ loading: true });
     try {
       const me = await authApi.me();
@@ -55,4 +65,4 @@ export const useAuthStore = create<AuthState>((set, get) => ({
   },
 }));
 
-export const isAuthed = () => !!useAuthStore.getState().token;
+export const isAuthed = () => !!useAuthStore.getState().token || hasEmbeddedToken();

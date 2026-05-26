@@ -18,7 +18,7 @@ import {
 } from 'lucide-react';
 import clsx from 'clsx';
 
-import { useAuthStore } from '../stores/auth';
+import { isAuthed, useAuthStore } from '../stores/auth';
 import { useLoginGateStore } from '../stores/loginGate';
 import { toast } from '../stores/toast';
 
@@ -50,7 +50,7 @@ export function AppLayout({ embedded }: { embedded?: boolean }) {
   const logout = useAuthStore((s) => s.logout);
   const openGate = useLoginGateStore((s) => s.openGate);
   const navigate = useNavigate();
-  const isAuthed = !!token;
+  const authed = !!token || isAuthed();
 
   const onLogout = async () => {
     await logout();
@@ -59,7 +59,7 @@ export function AppLayout({ embedded }: { embedded?: boolean }) {
   };
 
   const handleNav = (item: NavItem, e: MouseEvent) => {
-    if (!embedded && item.authed && !isAuthed) {
+    if (!embedded && item.authed && !authed) {
       e.preventDefault();
       openGate({ hint: `登录后即可使用“${item.label}”`, onLoggedIn: () => navigate(item.to) });
     }
@@ -85,7 +85,7 @@ export function AppLayout({ embedded }: { embedded?: boolean }) {
 
         <div className="mb-3 flex flex-col items-center gap-2">
           {visibleItems.slice(7).map((item) => <RailLink key={item.to} item={item} onClick={handleNav} />)}
-          {!embedded && isAuthed ? (
+          {!embedded && authed ? (
             <>
               <button
                 type="button"
