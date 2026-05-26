@@ -32,8 +32,10 @@ type PwdForm = z.infer<typeof pwdSchema>;
 
 export default function SettingsPage() {
   const me = useAuthStore((s) => s.me);
-  const embeddedParams = new URLSearchParams(window.location.search);
-  const embedded = embeddedParams.get('mode') === 'embedded' || !!embeddedParams.get('token');
+  const embedded =
+    !!new URLSearchParams(window.location.search).get('token') ||
+    new URLSearchParams(window.location.search).get('mode') === 'embedded' ||
+    !!localStorage.getItem('sub2api_token');
   const [mode, setLocalMode] = useState<ThemeMode>(
     (localStorage.getItem('klein:theme') as ThemeMode | null) ?? 'light',
   );
