@@ -6,8 +6,9 @@ import (
 	"fmt"
 	"time"
 
+	sqlmysql "github.com/go-sql-driver/mysql"
 	"go.uber.org/zap"
-	"gorm.io/driver/mysql"
+	gormmysql "gorm.io/driver/mysql"
 	"gorm.io/gorm"
 	gormlogger "gorm.io/gorm/logger"
 
@@ -21,6 +22,15 @@ func NewMySQL(c *config.MySQL) (*gorm.DB, error) {
 		return nil, fmt.Errorf("mysql dsn empty")
 	}
 
+	parsedDSN, err := sqlmysql.ParseDSN(c.DSN)
+	if err != nil {
+		return nil, fmt.Errorf("parse mysql dsn: %w", err)
+	}
+	// Force utf8mb4 at the handshake/session level so every pooled connection
+	// uses the same charset when reading Chinese text.
+	parsedDSN.Collation = "utf8mb4_0900_ai_ci"
+	effectiveDSN := parsedDSN.FormatDSN()
+
 	gormLog := gormlogger.New(
 		zapWriter{l: logger.L()},
 		gormlogger.Config{
@@ -31,7 +41,7 @@ func NewMySQL(c *config.MySQL) (*gorm.DB, error) {
 		},
 	)
 
-	db, err := gorm.Open(mysql.Open(c.DSN), &gorm.Config{
+	db, err := gorm.Open(gormmysql.Open(effectiveDSN), &gorm.Config{
 		Logger:                                   gormLog,
 		PrepareStmt:                              true,
 		DisableForeignKeyConstraintWhenMigrating: true,
