@@ -67,7 +67,6 @@ export default function App() {
             {embedded ? (
               <>
                 <Route path="/history" element={<HistoryPage />} />
-                <Route path="/settings" element={<SettingsPage />} />
               </>
             ) : (
               <Route element={<RequireAuth />}>

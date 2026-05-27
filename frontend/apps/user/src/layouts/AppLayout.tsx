@@ -45,7 +45,9 @@ const NAV_ITEMS: NavItem[] = [
 
 export function AppLayout({ embedded }: { embedded?: boolean }) {
   const token = useAuthStore((s) => s.token);
-  const visibleItems = embedded ? NAV_ITEMS.filter((item) => !["/billing", "/keys", "/invite"].includes(item.to)) : NAV_ITEMS;
+  const visibleItems = embedded
+    ? NAV_ITEMS.filter((item) => !["/billing", "/keys", "/invite", "/settings"].includes(item.to))
+    : NAV_ITEMS;
   const me = useAuthStore((s) => s.me);
   const logout = useAuthStore((s) => s.logout);
   const openGate = useLoginGateStore((s) => s.openGate);
