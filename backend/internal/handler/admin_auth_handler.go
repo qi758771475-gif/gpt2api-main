@@ -3,12 +3,14 @@ package handler
 
 import (
 	"github.com/gin-gonic/gin"
+	"go.uber.org/zap"
 
 	"github.com/kleinai/backend/internal/dto"
 	"github.com/kleinai/backend/internal/middleware"
 	"github.com/kleinai/backend/internal/repo"
 	"github.com/kleinai/backend/internal/service"
 	"github.com/kleinai/backend/pkg/errcode"
+	"github.com/kleinai/backend/pkg/logger"
 	"github.com/kleinai/backend/pkg/response"
 )
 
@@ -57,6 +59,13 @@ func (h *AdminAuthHandler) Me(c *gin.Context) {
 	if role != nil {
 		roleCode, roleName = role.Code, fixMojibakeString(role.Name)
 	}
+	logger.FromCtx(c.Request.Context()).Info("admin_auth.me.debug",
+		zap.String("username", u.Username),
+		zap.Stringp("nickname_raw", u.Nickname),
+		zap.Binary("nickname_bytes", []byte(valueOrEmpty(u.Nickname))),
+		zap.String("role_name_raw", roleName),
+		zap.Binary("role_name_bytes", []byte(roleName)),
+	)
 	response.OK(c, gin.H{
 		"id":        u.ID,
 		"username":  u.Username,
@@ -81,4 +90,11 @@ func (h *AdminAuthHandler) ChangePassword(c *gin.Context) {
 		return
 	}
 	response.OK(c, gin.H{"ok": true})
+}
+
+func valueOrEmpty(s *string) string {
+	if s == nil {
+		return ""
+	}
+	return *s
 }
