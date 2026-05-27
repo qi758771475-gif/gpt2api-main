@@ -32,7 +32,7 @@ func (h *AdminSystemHandler) GetSettings(c *gin.Context) {
 		response.Fail(c, err)
 		return
 	}
-	response.OK(c, all)
+	response.OK(c, fixMojibakeAny(all))
 }
 
 // UpdateSettings PUT /admin/api/v1/system/settings

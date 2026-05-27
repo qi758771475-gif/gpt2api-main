@@ -38,7 +38,7 @@ func (h *AdminAuthHandler) Login(c *gin.Context) {
 	response.OK(c, gin.H{
 		"id":       u.ID,
 		"username": u.Username,
-		"nickname": u.Nickname,
+		"nickname": fixMojibakePointer(u.Nickname),
 		"role_id":  u.RoleID,
 		"token":    tok,
 	})
@@ -55,12 +55,12 @@ func (h *AdminAuthHandler) Me(c *gin.Context) {
 	role, _ := h.repo.GetRoleByID(c.Request.Context(), u.RoleID)
 	roleCode, roleName := "", ""
 	if role != nil {
-		roleCode, roleName = role.Code, role.Name
+		roleCode, roleName = role.Code, fixMojibakeString(role.Name)
 	}
 	response.OK(c, gin.H{
 		"id":        u.ID,
 		"username":  u.Username,
-		"nickname":  u.Nickname,
+		"nickname":  fixMojibakePointer(u.Nickname),
 		"email":     u.Email,
 		"role_id":   u.RoleID,
 		"role_code": roleCode,
