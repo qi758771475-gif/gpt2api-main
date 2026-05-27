@@ -69,10 +69,40 @@ func NewMySQL(c *config.MySQL) (*gorm.DB, error) {
 		return nil, fmt.Errorf("ping mysql: %w", err)
 	}
 
+	// Force the session charset to utf8mb4 so reads/writes of Chinese text
+	// stay consistent even if the client/session defaults drift.
+	if err := db.WithContext(ctx).Exec("SET NAMES utf8mb4 COLLATE utf8mb4_0900_ai_ci").Error; err != nil {
+		return nil, fmt.Errorf("set mysql session charset: %w", err)
+	}
+
+	type sessionVar struct {
+		Name  string
+		Value string
+	}
+	var sessionVars []sessionVar
+	if err := db.WithContext(ctx).Raw(`
+		SHOW VARIABLES WHERE Variable_name IN (
+			'character_set_client',
+			'character_set_connection',
+			'character_set_results',
+			'collation_connection'
+		)
+	`).Scan(&sessionVars).Error; err != nil {
+		return nil, fmt.Errorf("query mysql session charset: %w", err)
+	}
+	sessionCharset := map[string]string{}
+	for _, item := range sessionVars {
+		sessionCharset[item.Name] = item.Value
+	}
+
 	logger.L().Info("mysql connected",
 		zap.Int("max_open", maxOpen),
 		zap.Int("max_idle", maxIdle),
 		zap.Duration("lifetime", lifetime),
+		zap.String("character_set_client", sessionCharset["character_set_client"]),
+		zap.String("character_set_connection", sessionCharset["character_set_connection"]),
+		zap.String("character_set_results", sessionCharset["character_set_results"]),
+		zap.String("collation_connection", sessionCharset["collation_connection"]),
 	)
 	return db, nil
 }
