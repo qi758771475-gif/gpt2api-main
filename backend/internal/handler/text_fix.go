@@ -1,7 +1,5 @@
 package handler
 
-import "strings"
-
 // fixMojibakeString repairs common mojibake where UTF-8 bytes were decoded as
 // latin1/western single-byte text before reaching the API response layer.
 func fixMojibakeString(s string) string {
@@ -9,25 +7,20 @@ func fixMojibakeString(s string) string {
 		return s
 	}
 
-	// Heuristic: only attempt repair when obvious mojibake markers are present.
-	if !strings.ContainsAny(s, "ÃÂÅÆÇÈÉÊËÌÍÎÏÐÑÒÓÔÕÖØÙÚÛÜÝÞßàáâãäåæçèéêëìíîïðñòóôõöøùúûüýþÿ") &&
-		!strings.ContainsAny(s, "çæåéèäöü£¢¥") {
-		return s
-	}
-
-	b := make([]byte, len(s))
-	for i, r := range s {
+	// If the string already contains runes outside the single-byte range, treat
+	// it as already-decoded Unicode text and leave it untouched.
+	for _, r := range s {
 		if r > 255 {
 			return s
 		}
-		b[i] = byte(r)
 	}
 
-	fixed := string(b)
-	if !strings.ContainsRune(fixed, '\uFFFD') {
-		return fixed
+	// Rebuild the original single-byte stream and interpret it as UTF-8.
+	b := make([]byte, 0, len(s))
+	for _, r := range s {
+		b = append(b, byte(r))
 	}
-	return s
+	return string(b)
 }
 
 func fixMojibakePointer(s *string) *string {
